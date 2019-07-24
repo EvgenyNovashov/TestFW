@@ -1,10 +1,40 @@
 from .pages.product_page import ProductPage
+from .pages.login_page import LoginPage
 from .pages.cart_page import CartPage
+import time
 import pytest
 import time
 
+link = "http://selenium1py.pythonanywhere.com/ru/catalogue/coders-at-work_207/?promo=newYear2019"
 
 @pytest.mark.parametrize('link', ["http://selenium1py.pythonanywhere.com/ru/catalogue/coders-at-work_207/?promo=newYear2019"])
+
+@pytest.mark.login_user
+class TestUserAddToCartFromProductPage(object):
+    @pytest.fixture(scope="function", autouse=True)
+    def setup(self, browser):
+        link = 'http://selenium1py.pythonanywhere.com/ru/accounts/login/'
+        page = LoginPage(browser, link)
+        # открыть страницу регистрации
+        page.open()
+        #зарегистрировать нового пользователя
+        email = str(time.time()) + "@fakemail.org"
+        page.register_new_user(email,'QwQ321000QwQ')
+        #проверить, что пользователь залогинен
+        page.should_be_authorized_user()
+
+    def test_user_cant_see_success_message(self, browser, link):
+        page = ProductPage(browser, link)
+        page.open()
+        page.should_not_be_success_message()
+
+    def test_user_can_add_product_to_cart(self, browser, link):
+        page = ProductPage(browser, link)
+        page.open()
+        page.add_to_card()
+        page.solve_quiz_and_get_code()
+        page.should_be_message()
+        page.should_be_cost()
 
 def test_guest_can_add_product_to_cart(browser, link):
     #link = "http://selenium1py.pythonanywhere.com/catalogue/the-shellcoders-handbook_209/?promo=newYear"
